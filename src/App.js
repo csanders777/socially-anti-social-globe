@@ -2,11 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import Globe from 'react-globe.gl';
 import { csvParse } from 'd3-dsv';
 import * as THREE from 'three';
-import TextPressure from './TextPressure'; // ✅ Make sure this file exists in /src
+import { FontLoader } from 'three-stdlib';
+import { TextGeometry } from 'three-stdlib';
+import TextPressure from './TextPressure';
+import Loader from './Loader';
+import './Loader.css';
 
 function App() {
   const [pointsData, setPointsData] = useState([]);
   const globeRef = useRef();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/world_population.csv')
@@ -25,7 +30,7 @@ function App() {
   useEffect(() => {
     if (globeRef.current) {
       globeRef.current.controls().autoRotate = true;
-      globeRef.current.controls().autoRotateSpeed = 4.7;
+      globeRef.current.controls().autoRotateSpeed = 0.5;
     }
   }, []);
 
@@ -35,16 +40,13 @@ function App() {
 
     const scene = globe.scene();
 
-    // Remove default lights
     scene.children = scene.children.filter(obj => !obj.isLight);
 
-    // Lights
     scene.add(new THREE.AmbientLight(0x888888));
     const dirLight = new THREE.DirectionalLight(0xffffff, 1);
     dirLight.position.set(5, 3, 5);
     scene.add(dirLight);
 
-    // Glow
     const glowTexture = new THREE.TextureLoader().load(
       'https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/glow.png'
     );
@@ -58,6 +60,8 @@ function App() {
     const sprite = new THREE.Sprite(spriteMaterial);
     sprite.scale.set(20, 20, 1);
     scene.add(sprite);
+
+    setTimeout(() => setIsLoading(false), 1500);
   };
 
   const getColor = (pop) => {
@@ -75,15 +79,20 @@ function App() {
   };
 
   return (
-    <div style={{ position: 'fixed', width: '100vw', height: '100vh' }}>
-      {/* ✅ Welcome TextPressure Animation */}
-      <div style={{
-        position: 'absolute',
-        top: '30%',
-        width: '100%',
-        height: '300px',
-        zIndex: 10
-      }}>
+    <>
+      {isLoading && <Loader />}
+
+      <div
+        style={{
+          position: 'absolute',
+          top: '100px',
+          width: '100%',
+          pointerEvents: 'none',
+          display: 'flex',
+          justifyContent: 'center',
+          zIndex: 10
+        }}
+      >
         <TextPressure
           text="Welcome!"
           flex={true}
@@ -94,29 +103,38 @@ function App() {
           italic={true}
           textColor="#ffffff"
           strokeColor="#ff0000"
-          minFontSize={36}
+          minFontSize={12}
         />
       </div>
 
-      {/* ✅ 3D Globe */}
-      <Globe
-        ref={globeRef}
-        globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
-        backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
-        pointsData={pointsData}
-        pointLat={d => d.lat}
-        pointLng={d => d.lng}
-        pointAltitude={d => getHeight(d.size)}
-        pointColor={d => d.color}
-        pointRadius={0.2}
-        atmosphereColor="#7851A9"
-        atmosphereAltitude={0.3}
-        onGlobeReady={handleGlobeReady}
-        onPointClick={d =>
-          alert(`Population: ${d.size.toLocaleString()}\nLat: ${d.lat}, Lng: ${d.lng}`)
-        }
-      />
-    </div>
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: -1,
+        overflow: 'hidden'
+      }}>
+        <Globe
+          ref={globeRef}
+          globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
+          backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
+          pointsData={pointsData}
+          pointLat={d => d.lat}
+          pointLng={d => d.lng}
+          pointAltitude={d => getHeight(d.size)}
+          pointColor={d => d.color}
+          pointRadius={0.2}
+          atmosphereColor="#7851A9"
+          atmosphereAltitude={0.3}
+          onGlobeReady={handleGlobeReady}
+          onPointClick={d =>
+            alert(`Population: ${d.size.toLocaleString()}\nLat: ${d.lat}, Lng: ${d.lng}`)
+          }
+        />
+      </div>
+    </>
   );
 }
 
