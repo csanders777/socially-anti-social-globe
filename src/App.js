@@ -4,7 +4,6 @@ import { csvParse } from 'd3-dsv';
 import * as THREE from 'three';
 import { FontLoader } from 'three-stdlib';
 import { TextGeometry } from 'three-stdlib';
-import TextPressure from './TextPressure';
 import Loader from './Loader';
 import './Loader.css';
 
@@ -40,13 +39,16 @@ function App() {
 
     const scene = globe.scene();
 
+    // Remove default lights
     scene.children = scene.children.filter(obj => !obj.isLight);
 
+    // Lights
     scene.add(new THREE.AmbientLight(0x888888));
     const dirLight = new THREE.DirectionalLight(0xffffff, 1);
     dirLight.position.set(5, 3, 5);
     scene.add(dirLight);
 
+    // Glow
     const glowTexture = new THREE.TextureLoader().load(
       'https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/glow.png'
     );
@@ -61,14 +63,15 @@ function App() {
     sprite.scale.set(20, 20, 1);
     scene.add(sprite);
 
+    // Done loading
     setTimeout(() => setIsLoading(false), 1500);
   };
 
   const getColor = (pop) => {
-    if (pop > 1e7) return '#7851A9';
-    if (pop > 1e6) return '#FF0000';
-    if (pop > 1e5) return '#FFD700';
-    return '#12db00';
+    if (pop > 1e7) return '#7851A9';  // purple
+    if (pop > 1e6) return '#FF0000';  // red
+    if (pop > 1e5) return '#FFD700';  // gold
+    return '#12db00';                // green
   };
 
   const getHeight = (pop) => {
@@ -82,40 +85,8 @@ function App() {
     <>
       {isLoading && <Loader />}
 
-      <div
-        style={{
-          position: 'absolute',
-          top: '100px',
-          width: '100%',
-          pointerEvents: 'none',
-          display: 'flex',
-          justifyContent: 'center',
-          zIndex: 10
-        }}
-      >
-        <TextPressure
-          text="Welcome!"
-          flex={true}
-          alpha={false}
-          stroke={false}
-          width={true}
-          weight={true}
-          italic={true}
-          textColor="#ffffff"
-          strokeColor="#ff0000"
-          minFontSize={12}
-        />
-      </div>
-
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: -1,
-        overflow: 'hidden'
-      }}>
+      {/* Globe Visualization */}
+      <div style={{ position: 'fixed', width: '100vw', height: '100vh', zIndex: -1 }}>
         <Globe
           ref={globeRef}
           globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
