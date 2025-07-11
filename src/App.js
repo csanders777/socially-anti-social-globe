@@ -2,8 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import Globe from 'react-globe.gl';
 import { csvParse } from 'd3-dsv';
 import * as THREE from 'three';
-import { FontLoader } from 'three-stdlib';
-import { TextGeometry } from 'three-stdlib';
 import Loader from './Loader';
 import './Loader.css';
 
@@ -48,7 +46,7 @@ function App() {
     dirLight.position.set(5, 3, 5);
     scene.add(dirLight);
 
-    // Glow
+    // Glow effect
     const glowTexture = new THREE.TextureLoader().load(
       'https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/glow.png'
     );
@@ -85,7 +83,7 @@ function App() {
     <>
       {isLoading && <Loader />}
 
-      {/* Globe Visualization */}
+      {/* Interactive Globe */}
       <div style={{ position: 'fixed', width: '100vw', height: '100vh', zIndex: -1 }}>
         <Globe
           ref={globeRef}
@@ -104,6 +102,54 @@ function App() {
             alert(`Population: ${d.size.toLocaleString()}\nLat: ${d.lat}, Lng: ${d.lng}`)
           }
         />
+      </div>
+
+      {/* Centered Button */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 10,
+          pointerEvents: 'auto'
+        }}
+      >
+        <a
+          href="https://sociallyantistudios.wixstudio.com/soanti/main"
+          style={{ textDecoration: 'none' }}
+        >
+          <button style={{
+            alignItems: 'center',
+            backgroundImage: 'linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb)',
+            border: 0,
+            borderRadius: '8px',
+            boxSizing: 'border-box',
+            color: '#ffffff',
+            display: 'flex',
+            fontSize: '18px',
+            justifyContent: 'center',
+            lineHeight: '1em',
+            minWidth: '140px',
+            padding: '3px',
+            userSelect: 'none',
+            touchAction: 'manipulation',
+            whiteSpace: 'nowrap',
+            cursor: 'pointer',
+            transition: 'all 0.3s'
+          }}>
+            <span style={{
+              backgroundColor: 'rgb(5, 6, 45)',
+              padding: '16px 24px',
+              borderRadius: '6px',
+              width: '100%',
+              height: '100%',
+              transition: '300ms'
+            }}>
+              Enter Site
+            </span>
+          </button>
+        </a>
       </div>
     </>
   );
