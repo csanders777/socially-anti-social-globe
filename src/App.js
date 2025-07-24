@@ -11,14 +11,16 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/world_population.csv')
+    fetch(
+      'https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/world_population.csv'
+    )
       .then(res => res.text())
       .then(csvText => {
         const data = csvParse(csvText, ({ lat, lng, pop }) => ({
           lat: +lat,
           lng: +lng,
           size: +pop,
-          color: getColor(+pop)
+          color: getColor(+pop),
         }));
         setPointsData(data);
       });
@@ -28,6 +30,11 @@ function App() {
     if (globeRef.current) {
       globeRef.current.controls().autoRotate = true;
       globeRef.current.controls().autoRotateSpeed = 0.5;
+
+      // ✅ Enable mouse interaction
+      globeRef.current.controls().enableZoom = true;
+      globeRef.current.controls().enableRotate = true;
+      globeRef.current.controls().enablePan = false;
     }
   }, []);
 
@@ -40,39 +47,38 @@ function App() {
     // Remove default lights
     scene.children = scene.children.filter(obj => !obj.isLight);
 
-    // Lights
+    // Add ambient and directional lights
     scene.add(new THREE.AmbientLight(0x888888));
     const dirLight = new THREE.DirectionalLight(0xffffff, 1);
     dirLight.position.set(5, 3, 5);
     scene.add(dirLight);
 
-    // Glow effect
+    // Add glow effect
     const glowTexture = new THREE.TextureLoader().load(
       'https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/glow.png'
     );
     const spriteMaterial = new THREE.SpriteMaterial({
       map: glowTexture,
-      color: 0x7851A9,
+      color: 0x7851a9,
       transparent: true,
       opacity: 0.5,
-      depthWrite: false
+      depthWrite: false,
     });
     const sprite = new THREE.Sprite(spriteMaterial);
     sprite.scale.set(20, 20, 1);
     scene.add(sprite);
 
-    // Done loading
     setTimeout(() => setIsLoading(false), 1500);
   };
 
-  const getColor = (pop) => {
-    if (pop > 1e7) return '#7851A9';  // purple
-    if (pop > 1e6) return '#FF0000';  // red
-    if (pop > 1e5) return '#FFD700';  // gold
-    return '#12db00';                // green
+  const getColor = pop => {
+    if (pop > 1e7) return '#7851A9';
+    if (pop > 1e6) return '#FF0000';
+    if (pop > 1e5) return '#FFD700';
+    return '#12db00';
   };
 
-  const getHeight = (pop) => {
+  const getHeight = pop => {
     if (pop > 1e7) return Math.cbrt(pop) * 0.004;
     if (pop > 1e6) return Math.cbrt(pop) * 0.0015;
     if (pop > 1e5) return Math.cbrt(pop) * 0.0011;
@@ -83,11 +89,18 @@ function App() {
     <>
       {isLoading && <Loader />}
 
-      {/* Interactive Globe */}
-      <div style={{ position: 'fixed', width: '100vw', height: '100vh', zIndex: -1 }}>
+      {/* Globe Container */}
+      <div
+        style={{
+          position: 'fixed',
+          width: '100vw',
+          height: '100vh',
+          zIndex: -1,
+        }}
+      >
         <Globe
           ref={globeRef}
-          globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
+          globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
           backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
           pointsData={pointsData}
           pointLat={d => d.lat}
@@ -99,12 +112,14 @@ function App() {
           atmosphereAltitude={0.3}
           onGlobeReady={handleGlobeReady}
           onPointClick={d =>
-            alert(`Population: ${d.size.toLocaleString()}\nLat: ${d.lat}, Lng: ${d.lng}`)
+            alert(
+              `Population: ${d.size.toLocaleString()}\nLat: ${d.lat}, Lng: ${d.lng}`
+            )
           }
         />
       </div>
 
-      {/* Centered Button */}
+      {/* Floating Clickable Enter Site Button */}
       <div
         style={{
           position: 'absolute',
@@ -112,44 +127,23 @@ function App() {
           left: '50%',
           transform: 'translate(-50%, -50%)',
           zIndex: 10,
-          pointerEvents: 'auto'
         }}
       >
-        <a
-          href="https://sociallyantistudios.wixstudio.com/soanti/main"
-          style={{ textDecoration: 'none' }}
-        >
-          <button style={{
-            alignItems: 'center',
-            backgroundImage: 'linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb)',
-            border: 0,
-            borderRadius: '8px',
-            boxSizing: 'border-box',
-            color: '#ffffff',
-            display: 'flex',
-            fontSize: '18px',
-            justifyContent: 'center',
-            lineHeight: '1em',
-            minWidth: '140px',
-            padding: '3px',
-            userSelect: 'none',
-            touchAction: 'manipulation',
-            whiteSpace: 'nowrap',
+        <button
+          onClick={() => window.location.href = 'https://sociallyantistudios.wixstudio.com/soanti/main'} // Replace with your site
+          style={{
+            fontSize: '60px',
+            fontWeight: 'bold',
+            fontFamily: 'Arial, sans-serif',
+            color: 'white',
+            background: 'transparent',
+            border: 'none',
             cursor: 'pointer',
-            transition: 'all 0.3s'
-          }}>
-            <span style={{
-              backgroundColor: 'rgb(5, 6, 45)',
-              padding: '16px 24px',
-              borderRadius: '6px',
-              width: '100%',
-              height: '100%',
-              transition: '300ms'
-            }}>
-              Enter Site
-            </span>
-          </button>
-        </a>
+            textShadow: '0 0 10px #7851A9',
+          }}
+        >
+          Enter Site
+        </button>
       </div>
     </>
   );
